@@ -132,7 +132,7 @@
                                  field-name]))
                             [])
         builder-fn-name (symbol (str "+" schema-name))
-        build-fn-name (symbol (str "+" schema-name "-build+"))]
+        build-fn-name (symbol (str "+" schema-name "-build"))]
 
     (cons
       'do

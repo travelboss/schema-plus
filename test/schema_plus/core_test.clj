@@ -188,7 +188,7 @@
 (declare +MyPerson)
 (declare +MyPerson-with-name)
 (declare +MyPerson-with-age)
-(declare +MyPerson-build+)
+(declare +MyPerson-build)
 
 (deftest test-builder-functions
   (defschema+ MyPerson
@@ -201,7 +201,7 @@
            (-> (+MyPerson)
                (+MyPerson-with-name "Bob")
                (+MyPerson-with-age 42)
-               (+MyPerson-build+)))))
+               (+MyPerson-build)))))
 
   (testing "Build with all fields"
     (is (= {:age 42 :name "Bob" :occupation "Builder"}
@@ -209,14 +209,14 @@
                (+MyPerson-with-name "Bob")
                (+MyPerson-with-age 42)
                (+MyPerson-with-occupation "Builder")
-               (+MyPerson-build+)))))
+               (+MyPerson-build)))))
 
   (testing "Missing a mandatory field results in error"
     (is
       (thrown? Throwable
                (-> (+MyPerson)
                    (+MyPerson-with-age 42)
-                   (+MyPerson-build+)))))
+                   (+MyPerson-build)))))
 
   (testing "Failing to finalize means schema validation will fail"
     (is
@@ -229,4 +229,4 @@
   (testing "An initial map can be passed in"
     (is (= {:name "Bob" :age 42}
            (-> (+MyPerson {:name "Bob" :age 42})
-               (+MyPerson-build+))))))
+               (+MyPerson-build))))))
