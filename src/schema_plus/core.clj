@@ -114,9 +114,6 @@
 
   [schema-name schema-form & kvs]
 
-  (when (odd? (count kvs))
-    (throw (RuntimeException. "Expected an even number of key/values")))
-
   (let [opts-map (process-opts kvs)
         docstring (:docs opts-map "")
         generator-customizer (:generator opts-map)
