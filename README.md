@@ -18,7 +18,7 @@ Example of supplying a custom generator:
   {:name schema/Str
    :age schema/Int}
   :generator
-  (gen/return {:name \"Bob\", :age 42}))
+  (gen/return {:name "Bob" :age 42}))
 ```
 
 Example of supplying an fmap function:
@@ -61,10 +61,10 @@ Full example with all options:
 (defschema+ Person
   {:name schema/Str
    :age schema/Int}
-  :docs \"A person with a name and age\"
+  :docs "A person with a name and age"
   :generator (gen/hash-map :name gen/char-alphanumeric
                            :age gen/nat)
-  :example {:name \"Bob\", :age 42}
+  :example {:name "Bob" :age 42}
   :make-builders? false)"
 ```
 
@@ -72,5 +72,5 @@ Once `defschema+` has been used to define a schema, `schema-plus.core/generate` 
 
 ```
 => (schema-plus.core/generate Person)
-{:name "Efi239af", :age 1324}
+{:name "Efi239af" :age 1324}
 ```
