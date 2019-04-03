@@ -61,7 +61,7 @@ Full example with all options:
 (defschema+ Person
   {:name schema/Str
    :age schema/Int}
-  :doc \"A person with a name and age\"
+  :docs \"A person with a name and age\"
   :generator (gen/hash-map :name gen/char-alphanumeric
                            :age gen/nat)
   :example {:name \"Bob\", :age 42}
