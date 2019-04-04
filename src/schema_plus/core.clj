@@ -203,3 +203,15 @@
                  final#)))
 
            schema-var#)))))
+
+(defmacro +->
+  "A utility threading macro for use with builder functions. Removes the need
+   for a final call to +MySchema-build. Example usage:
+
+   (+-> (+Person.)
+        (+Person-with-name \"Bob\")
+        (+Person-with-age 42))"
+  [start & remainder]
+  `(-> ~start
+       ~@remainder
+       (dissoc ::incomplete)))

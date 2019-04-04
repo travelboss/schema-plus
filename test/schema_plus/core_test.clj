@@ -3,7 +3,7 @@
             [clojure.test :refer [deftest is testing]]
             [clojure.test.check.generators :as cg]
             [schema.core :as s]
-            [schema-plus.core :refer [defschema+ generate process-opts]])
+            [schema-plus.core :refer [defschema+ generate process-opts +->]])
   (:import [java.util Date UUID]))
 
 (deftest options-processing-test
@@ -202,6 +202,12 @@
                (+MyPerson-with-name "Bob")
                (+MyPerson-with-age 42)
                (+MyPerson-build)))))
+
+  (testing "Build with fancy arrow"
+    (is (= {:age 42 :name "Bob"}
+           (+-> (+MyPerson)
+                (+MyPerson-with-name "Bob")
+                (+MyPerson-with-age 42)))))
 
   (testing "Build with all fields"
     (is (= {:age 42 :name "Bob" :occupation "Builder"}
