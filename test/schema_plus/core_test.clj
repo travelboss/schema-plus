@@ -3,7 +3,8 @@
             [clojure.test :refer [deftest is testing]]
             [clojure.test.check.generators :as cg]
             [schema.core :as s]
-            [schema-plus.core :refer [defschema+ generate process-opts +->]])
+            [schema-plus.core :refer [defschema+ generate process-opts
+                                      +-> +generate->]])
   (:import [java.util Date UUID]))
 
 (deftest options-processing-test
@@ -203,11 +204,18 @@
                (+MyPerson-with-age 42)
                (+MyPerson-build)))))
 
-  (testing "Build with fancy arrow"
+  (testing "Build with +->"
     (is (= {:age 42 :name "Bob"}
-           (+-> (+MyPerson)
+           (+-> +MyPerson
                 (+MyPerson-with-name "Bob")
                 (+MyPerson-with-age 42)))))
+
+  (testing "Build with +generate->"
+    (let [final (+generate-> +MyPerson
+                             (+MyPerson-with-name "Bob"))]
+      (is (= "Bob" (:name final)))
+      (is (integer? (:age final)))
+      (is (empty? (-> final keys set (sets/difference #{:name :age :occupation}))))))
 
   (testing "Build with all fields"
     (is (= {:age 42 :name "Bob" :occupation "Builder"}
@@ -232,6 +240,7 @@
                  (-> (+MyPerson)
                      (+MyPerson-with-age 42)
                      (+MyPerson-with-name "Bob"))))))
+
   (testing "An initial map can be passed in"
     (is (= {:name "Bob" :age 42}
            (-> (+MyPerson {:name "Bob" :age 42})

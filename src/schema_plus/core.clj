@@ -188,6 +188,7 @@
            (swap! generator-registry assoc schema-obj# generator#)
 
            (when ~make-builders?
+
              ; define function to start building instances
              (defn ~builder-fn-name
                ([] ; from scratch
@@ -208,10 +209,30 @@
   "A utility threading macro for use with builder functions. Removes the need
    for a final call to +MySchema-build. Example usage:
 
-   (+-> (+Person.)
+   (+-> +Person
         (+Person-with-name \"Bob\")
         (+Person-with-age 42))"
   [start & remainder]
-  `(-> ~start
+  (let [build-fn-name (symbol (str start "-build"))]
+    `(-> (~start)
+         ~@remainder
+         (~build-fn-name))))
+
+(defmacro +generate->
+  "A utility threading macro for creating mock data. Starts with a generated
+   instance of the schema, and allows fields to be customized. There is no
+   need for a final -build call. Example usage:
+
+   (+generate-> +Person
+                (+Person-with-age 42))"
+  [start & remainder]
+  (let [schema-name (.substring (name start) 1) ; strip off namespace, leading '+'
+        schema-name-with-ns (if (nil? (namespace start))
+                              schema-name
+                              (str (namespace start) "/" schema-name))
+        schema-symbol (symbol schema-name-with-ns)
+        build-fn-name (symbol (str start "-build"))]
+
+  `(-> (~start (generate ~schema-symbol))
        ~@remainder
-       (dissoc ::incomplete)))
+       (~build-fn-name))))
