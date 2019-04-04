@@ -29,9 +29,10 @@
 
 (defn process-opts
   "Only for internal usage"
-  [kvs]
+  [kvs schema-name]
   (when (odd? (count kvs))
-    (throw (RuntimeException. "Expected an even number of key/values")))
+    (throw (RuntimeException. (format "Bad call to defschema+, got an odd number of key/values for %s"
+                                      schema-name))))
 
   (let [opts-map (apply hash-map kvs)
         extra-opts (-> opts-map
@@ -39,8 +40,8 @@
                        set
                        (difference #{:docs :generator :example :make-builders?}))]
     (if (seq extra-opts)
-      (throw (RuntimeException. (str "Got unexpected option keys: "
-                                     (string/join ", " extra-opts))))
+      (throw (RuntimeException. (format "Bad call to defschema+, got unexpected option keys for %s: %s"
+                                        schema-name (string/join ", " extra-opts))))
       opts-map)))
 
 (defmacro defschema+
@@ -114,7 +115,7 @@
 
   [schema-name schema-form & kvs]
 
-  (let [opts-map (process-opts kvs)
+  (let [opts-map (process-opts kvs schema-name)
         docstring (:docs opts-map "")
         generator-customizer (:generator opts-map)
         make-builders? (:make-builders? opts-map true)
@@ -167,7 +168,10 @@
                             (cg/fmap ~generator-customizer basic-generator#)
 
                             :else
-                            (throw (RuntimeException. (str "Got bad generator argument for: " ~schema-name))))
+                            (throw
+                              (RuntimeException.
+                                (format "Bad call to defschema+, expected Generator or fn for %s :generator, got: %s"
+                                        ~schema-name (type ~generator-customizer)))))
 
                example# (if (contains? ~opts-map :example)
                           (:example ~opts-map)
