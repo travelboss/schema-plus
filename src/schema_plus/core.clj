@@ -119,86 +119,87 @@
         generator-customizer (:generator opts-map)
         make-builders? (:make-builders? opts-map true)
 
+        base-name (if (nil? (namespace schema-name))
+                    (str "+" schema-name)
+                    (str (namespace schema-name) "/+" (name schema-name)))
+
         ; build a seq of [setter-fn-name field-name] for all fields
         fn-names-and-keys (if (and make-builders? (map? schema-form))
                             (for [k (keys schema-form)]
                               (let [field-name (if (seq? k) ; remove s/optional-key wrappers, etc
                                                  (last k)
                                                  k)]
-                                [(symbol (str "+" schema-name "-with-" (name field-name)))
+                                [(symbol (str base-name "-with-" (name field-name)))
                                  field-name]))
                             [])
-        builder-fn-name (symbol (str "+" schema-name))
-        build-fn-name (symbol (str "+" schema-name "-build"))]
+        builder-fn-name (symbol base-name)
+        build-fn-name (symbol (str base-name "-build"))]
 
-    (cons
-      'do
+    (concat
+      ['do]
 
-      (concat
+      (when make-builders?
+        ; for each field name, defn a setter function
+        (for [[fn-name schema-key] fn-names-and-keys]
+          `(defn ~fn-name
+             [this# v#]
+             (assoc this# ~schema-key v#))))
 
-        (if make-builders?
-          ; for each field name, defn a setter function
-          (for [[fn-name schema-key] fn-names-and-keys]
-            `(defn ~fn-name
-               [this# v#]
-               (assoc this# ~schema-key v#)))
-          '())
+      (list
+        `(let [; make the normal defschema call
+               schema-var# (s/defschema ~schema-name ~docstring ~schema-form)
+               schema-obj# (var-get schema-var#)
 
-        (list
-          `(let [; make the normal defschema call
-                 schema-var# (s/defschema ~schema-name ~docstring ~schema-form)
-                 schema-obj# (var-get schema-var#)
+               ; a naive generator simply based on types
+               basic-generator# (sg/generator schema-obj# @generator-registry)
 
-                 ; a naive generator simply based on types
-                 basic-generator# (sg/generator schema-obj# @generator-registry)
+               generator# (cond
+                            ; nothing passed in, use default generator behavior
+                            (nil? ~generator-customizer)
+                            basic-generator#
 
-                 generator# (cond
-                              ; nothing passed in, use default generator behavior
-                              (nil? ~generator-customizer)
-                              basic-generator#
+                            ; generator passed, use directly
+                            (cg/generator? ~generator-customizer)
+                            ~generator-customizer
 
-                              ; generator passed, use directly
-                              (cg/generator? ~generator-customizer)
-                              ~generator-customizer
+                            ; function passed, make new generator with fmap
+                            (fn? ~generator-customizer)
+                            (cg/fmap ~generator-customizer basic-generator#)
 
-                              ; function passed, make new generator with fmap
-                              (fn? ~generator-customizer)
-                              (cg/fmap ~generator-customizer basic-generator#)
+                            :else
+                            (throw (RuntimeException. (str "Got bad generator argument for: " ~schema-name))))
 
-                              :else
-                              (throw (RuntimeException. (str "Got bad generator argument for: " ~schema-name))))
+               example# (if (contains? ~opts-map :example)
+                          (:example ~opts-map)
+                          (cg/generate generator#))
 
-                 example# (if (contains? ~opts-map :example)
-                            (:example ~opts-map)
-                            (cg/generate generator#))
+               schema-with-meta# (vary-meta
+                                   schema-obj#
+                                   assoc :json-schema {:description ~docstring
+                                                       :example example#})
 
-                 schema-with-meta# (vary-meta
-                                     schema-obj#
-                                     assoc :json-schema {:description ~docstring
-                                                         :example example#})
+               ; redef with metadata - not sure how else to properly do this
+               schema-var# (s/defschema ~schema-name ~docstring schema-with-meta#)
+               schema-obj# (var-get schema-var#)]
 
-                 ; redef with metadata - not sure how else to properly do this
-                 schema-var# (s/defschema ~schema-name ~docstring schema-with-meta#)
-                 schema-obj# (var-get schema-var#)]
+           (s/validate schema-obj# example#)
 
-             (s/validate schema-obj# example#)
+           ; update the registry with the new generator
+           (swap! generator-registry assoc schema-obj# generator#)
 
-             ; update the registry with the new generator
-             (swap! generator-registry assoc schema-obj# generator#)
+           (when ~make-builders?
+             ; define function to start building instances
+             (defn ~builder-fn-name
+               ([] ; from scratch
+                {::incomplete true})
+               ([m#] ; from an initial map
+                (assoc m# ::incomplete true)))
 
-             (when ~make-builders?
-               ; define function to start building instances
-               (defn ~builder-fn-name
-                 ([] ; from scratch
-                  {::incomplete true})
-                 ([m#] ; from an initial map
-                  (assoc m# ::incomplete true)))
+             ; define function to finish building instances
+             (defn ~build-fn-name
+               [this#]
+               (let [final# (dissoc this# ::incomplete)]
+                 (s/validate schema-obj# final#)
+                 final#)))
 
-               ; define function to finish building instances
-               (defn ~build-fn-name
-                 [this#]
-                 (let [final# (dissoc this# ::incomplete)]
-                   (s/validate schema-obj# final#)
-                   final#)))
-
-             schema-obj#))))))
+           schema-var#)))))
