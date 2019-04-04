@@ -3,7 +3,7 @@
             [clojure.test :refer [deftest is testing]]
             [clojure.test.check.generators :as cg]
             [schema.core :as s]
-            [schema-plus.core :refer [defschema+ generate process-opts
+            [schema-plus.core :refer [defschema+ generate process-opts set-generator
                                       +-> +generate->]])
   (:import [java.util Date UUID]))
 
@@ -181,7 +181,13 @@
     (let [gen (generate MyCustomFMapOuter)]
       (is (= 123 (-> gen :a :a)))
       (is (string? (:b gen)))
-      (is (= (:b gen) (-> gen :a :b))))))
+      (is (= (:b gen) (-> gen :a :b)))))
+
+  (testing "Generating fields with direct Java Classes"
+    (set-generator Object (cg/return "abc"))
+    (defschema+ MyWeirdMap
+      {:a Object})
+    (is (= {:a "abc"} (generate MyWeirdMap)))))
 
 ; These declarations aren't necessary, but make Joker happy. These would
 ; normally be avoided by properly importing from another namespace where

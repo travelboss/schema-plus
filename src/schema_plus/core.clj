@@ -15,17 +15,17 @@
   [schema-obj]
   (sg/generate schema-obj @generator-registry))
 
-(defn get-generator-for
+(defn get-generator
   "Get the current clojure.test.check.generators.Generator for a schema."
   [schema-obj]
   (get @generator-registry schema-obj))
 
-(defn set-generator-for
+(defn set-generator
   "Manually set the Generators for some schema object. Normally this
    should only be used for raw Java Classes and other objects where
    defschema+ can't be used directly."
   [schema-obj generator]
-  (swap! @generator-registry assoc schema-obj generator))
+  (swap! generator-registry assoc schema-obj generator))
 
 (defn process-opts
   "Only for internal usage"
@@ -185,7 +185,7 @@
            (s/validate schema-obj# example#)
 
            ; update the registry with the new generator
-           (swap! generator-registry assoc schema-obj# generator#)
+           (set-generator schema-obj# generator#)
 
            (when ~make-builders?
 
