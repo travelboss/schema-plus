@@ -1,6 +1,14 @@
 # schema-plus
 Adds easy mock generation and builder functions to [plumatic/schema](https://github.com/plumatic/schema) definitions.
 
+## Installation
+
+This library is available through clojars. Add the following to your dependencies:
+
+```clojure
+[travelboss/schema-plus "0.1.0"]
+```
+
 ## Usage
 
 The main function you'll use is `schema-plus.core/defschema+`. Use this instead of Plumatic's `schema/defschema` to get mock generation capabilities, default example values for Ring-Swagger, and optional builder functions.
