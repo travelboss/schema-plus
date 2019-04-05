@@ -36,8 +36,8 @@
   "Only for internal usage"
   [kvs schema-name]
   (when (odd? (count kvs))
-    (throw-arg-err! (format "Bad call to defschema+, got an odd number of key/values for %s"
-                            schema-name)))
+    (throw-arg-err! (str "Bad call to defschema+, got an odd number of key/values for "
+                         schema-name)))
 
   (let [opts-map (apply hash-map kvs)
         extra-opts (-> opts-map
@@ -45,8 +45,8 @@
                        set
                        (difference #{:docs :generator :example :make-builders?}))]
     (if (seq extra-opts)
-      (throw-arg-err! (format "Bad call to defschema+, got unexpected option keys for %s: %s"
-                              schema-name (string/join ", " extra-opts)))
+      (throw-arg-err! (str "Bad call to defschema+, got unexpected option keys for "
+                           schema-name " :" (string/join ", " extra-opts)))
       opts-map)))
 
 (defmacro defschema+
@@ -120,12 +120,12 @@
 
   [schema-name schema-form & kvs]
 
-  (let [opts-map (process-opts kvs schema-name)
+  (let [schema-name-str (str schema-name)
+        opts-map (process-opts kvs schema-name-str)
         docstring (:docs opts-map "")
         generator-customizer (:generator opts-map)
         make-builders? (:make-builders? opts-map true)
 
-        schema-name-str (str schema-name)
 
         base-name (if (nil? (namespace schema-name))
                     (str "+" schema-name)
@@ -175,8 +175,8 @@
 
                             :else
                             (throw-arg-err!
-                              (format "Bad call to defschema+, expected Generator or fn for %s :generator, got: %s"
-                                      ~schema-name-str (type ~generator-customizer))))
+                              (str "Bad call to defschema+, expected Generator or fn for "
+                                   ~schema-name-str " :generator, got: " (type ~generator-customizer))))
 
                example# (if (contains? ~opts-map :example)
                           (:example ~opts-map)
