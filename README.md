@@ -6,7 +6,7 @@ Adds easy mock generation and builder functions to [plumatic/schema](https://git
 This library is available through clojars. Add the following to your dependencies:
 
 ```clojure
-[travelboss/schema-plus "0.1.0"]
+[travelboss/schema-plus "0.1.1"]
 ```
 
 ## Usage
