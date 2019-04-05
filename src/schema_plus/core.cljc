@@ -27,12 +27,17 @@
   [schema-obj generator]
   (swap! generator-registry assoc schema-obj generator))
 
+(defn throw-arg-err!
+  [msg]
+  #?(:clj (throw (IllegalArgumentException. msg))
+     :cljs (throw (js/Error. msg))))
+
 (defn process-opts
   "Only for internal usage"
   [kvs schema-name]
   (when (odd? (count kvs))
-    (throw (RuntimeException. (format "Bad call to defschema+, got an odd number of key/values for %s"
-                                      schema-name))))
+    (throw-arg-err! (format "Bad call to defschema+, got an odd number of key/values for %s"
+                            schema-name)))
 
   (let [opts-map (apply hash-map kvs)
         extra-opts (-> opts-map
@@ -40,8 +45,8 @@
                        set
                        (difference #{:docs :generator :example :make-builders?}))]
     (if (seq extra-opts)
-      (throw (RuntimeException. (format "Bad call to defschema+, got unexpected option keys for %s: %s"
-                                        schema-name (string/join ", " extra-opts))))
+      (throw-arg-err! (format "Bad call to defschema+, got unexpected option keys for %s: %s"
+                              schema-name (string/join ", " extra-opts)))
       opts-map)))
 
 (defmacro defschema+
@@ -120,6 +125,8 @@
         generator-customizer (:generator opts-map)
         make-builders? (:make-builders? opts-map true)
 
+        schema-name-str (str schema-name)
+
         base-name (if (nil? (namespace schema-name))
                     (str "+" schema-name)
                     (str (namespace schema-name) "/+" (name schema-name)))
@@ -147,9 +154,8 @@
              (assoc this# ~schema-key v#))))
 
       (list
-        `(let [; make the normal defschema call
-               schema-var# (s/defschema ~schema-name ~docstring ~schema-form)
-               schema-obj# (var-get schema-var#)
+        `(let [; evaluate the schema body
+               schema-obj# ~schema-form
 
                ; a naive generator simply based on types
                basic-generator# (sg/generator schema-obj# @generator-registry)
@@ -168,10 +174,9 @@
                             (cg/fmap ~generator-customizer basic-generator#)
 
                             :else
-                            (throw
-                              (RuntimeException.
-                                (format "Bad call to defschema+, expected Generator or fn for %s :generator, got: %s"
-                                        ~schema-name (type ~generator-customizer)))))
+                            (throw-arg-err!
+                              (format "Bad call to defschema+, expected Generator or fn for %s :generator, got: %s"
+                                      ~schema-name-str (type ~generator-customizer))))
 
                example# (if (contains? ~opts-map :example)
                           (:example ~opts-map)
@@ -181,10 +186,7 @@
                                    schema-obj#
                                    assoc :json-schema {:description ~docstring
                                                        :example example#})
-
-               ; redef with metadata - not sure how else to properly do this
-               schema-var# (s/defschema ~schema-name ~docstring schema-with-meta#)
-               schema-obj# (var-get schema-var#)]
+               schema-var# (s/defschema ~schema-name ~docstring schema-with-meta#)]
 
            (s/validate schema-obj# example#)
 
