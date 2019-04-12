@@ -140,7 +140,8 @@
                                  field-name]))
                             [])
         builder-fn-name (symbol base-name)
-        build-fn-name (symbol (str base-name "-build"))
+        build-fn-str (str base-name "-build")
+        build-fn-name (symbol build-fn-str)
         build-macro-name (symbol (str base-name "->"))]
 
     (concat
@@ -203,16 +204,12 @@
                 (assoc m# ::incomplete true)))
 
              ; define function to finish building instances
-             (defn ~build-fn-name
-               [this#]
-               (let [final# (dissoc this# ::incomplete)]
-                 (s/validate schema-obj# final#)
-                 final#))
-
-             (defmacro ~build-macro-name
-               ([~'& forms#]
-                  `(s/validate ~schema-obj#
-                               (dissoc (-> ~@forms#)
-                                       ::incomplete)))))
-
+             (let [build-fn# (defn ~build-fn-name
+                               [this#]
+                               (let [final# (dissoc this# ::incomplete)]
+                                 (s/validate schema-obj# final#)
+                                 final#))]
+              (defmacro ~build-macro-name
+                ([~'& forms#]
+                  `(~build-fn# (dissoc (-> ~@forms#) ::incomplete))))))
            schema-var#)))))
