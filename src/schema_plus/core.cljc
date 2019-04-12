@@ -95,13 +95,12 @@
 
    (+Foo-build this) - Finalize creation of a Foo instance
 
-   (+Foo-mock-generate) - Generates a complete mock instance of Foo
+   (+Foo-> m forms) - (macro) Thread m through forms and validate the final result against the schema
 
-   Typical usage for creating a new instance would look like:
+   Typical usage for creating a new instance would look like (using the convenience macro):
 
-     (-> (+Foo)
-         (+Foo-with-bar 123)
-         (+Foo-build))
+     (+Foo-> (+Foo)
+             (+Foo-with-bar 123))
 
    Full example with all options:
 
@@ -141,7 +140,8 @@
                                  field-name]))
                             [])
         builder-fn-name (symbol base-name)
-        build-fn-name (symbol (str base-name "-build"))]
+        build-fn-name (symbol (str base-name "-build"))
+        build-macro-name (symbol (str base-name "->"))]
 
     (concat
       ['do]
@@ -203,42 +203,12 @@
                 (assoc m# ::incomplete true)))
 
              ; define function to finish building instances
-             (defn ~build-fn-name
-               [this#]
-               (let [final# (dissoc this# ::incomplete)]
-                 (s/validate schema-obj# final#)
-                 final#)))
-
+             (let [build-fn# (defn ~build-fn-name
+                               [this#]
+                               (let [final# (dissoc this# ::incomplete)]
+                                 (s/validate schema-obj# final#)
+                                 final#))]
+              (defmacro ~build-macro-name
+                ([~'& forms#]
+                  `(~build-fn# (-> ~@forms#))))))
            schema-var#)))))
-
-(defmacro +->
-  "A utility threading macro for use with builder functions. Removes the need
-   for a final call to +MySchema-build. Example usage:
-
-   (+-> +Person
-        (+Person-with-name \"Bob\")
-        (+Person-with-age 42))"
-  [start & remainder]
-  (let [build-fn-name (symbol (str start "-build"))]
-    `(-> (~start)
-         ~@remainder
-         (~build-fn-name))))
-
-(defmacro +generate->
-  "A utility threading macro for creating mock data. Starts with a generated
-   instance of the schema, and allows fields to be customized. There is no
-   need for a final -build call. Example usage:
-
-   (+generate-> +Person
-                (+Person-with-age 42))"
-  [start & remainder]
-  (let [schema-name (.substring (name start) 1) ; strip off namespace, leading '+'
-        schema-name-with-ns (if (nil? (namespace start))
-                              schema-name
-                              (str (namespace start) "/" schema-name))
-        schema-symbol (symbol schema-name-with-ns)
-        build-fn-name (symbol (str start "-build"))]
-
-  `(-> (~start (generate ~schema-symbol))
-       ~@remainder
-       (~build-fn-name))))

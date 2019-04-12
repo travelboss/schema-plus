@@ -3,8 +3,7 @@
             [clojure.test :refer [deftest is testing]]
             [clojure.test.check.generators :as cg]
             [schema.core :as s]
-            [schema-plus.core :refer [defschema+ generate process-opts set-generator
-                                      +-> +generate->]])
+            [schema-plus.core :refer [defschema+ generate process-opts set-generator]])
   (:import [java.util Date UUID]))
 
 (deftest options-processing-test
@@ -196,12 +195,13 @@
 (declare +MyPerson-with-name)
 (declare +MyPerson-with-age)
 (declare +MyPerson-build)
+(declare +MyPerson->)
+(defschema+ MyPerson
+  {:name s/Str
+    :age s/Int
+    (s/optional-key :occupation) s/Str})
 
 (deftest test-builder-functions
-  (defschema+ MyPerson
-    {:name s/Str
-     :age s/Int
-     (s/optional-key :occupation) s/Str})
 
   (testing "Build with all mandatory fields"
     (is (= {:age 42 :name "Bob"}
@@ -210,15 +210,16 @@
                (+MyPerson-with-age 42)
                (+MyPerson-build)))))
 
-  (testing "Build with +->"
+  (testing "Build with +MyPerson->"
     (is (= {:age 42 :name "Bob"}
-           (+-> +MyPerson
-                (+MyPerson-with-name "Bob")
-                (+MyPerson-with-age 42)))))
+           (+MyPerson-> (+MyPerson)
+                        (+MyPerson-with-name "Bob")
+                        (+MyPerson-with-age 42)))))
 
-  (testing "Build with +generate->"
-    (let [final (+generate-> +MyPerson
-                             (+MyPerson-with-name "Bob"))]
+  (testing "Build with +MyPerson-> starting with generated value"
+    (let [final (+MyPerson-> (generate MyPerson)
+                             (+MyPerson-with-name "Bob")
+                             (+MyPerson-with-age 2))]
       (is (= "Bob" (:name final)))
       (is (integer? (:age final)))
       (is (empty? (-> final keys set (sets/difference #{:name :age :occupation}))))))
