@@ -140,8 +140,7 @@
                                  field-name]))
                             [])
         builder-fn-name (symbol base-name)
-        build-fn-str (str base-name "-build")
-        build-fn-name (symbol build-fn-str)
+        build-fn-name (symbol (str base-name "-build"))
         build-macro-name (symbol (str base-name "->"))]
 
     (concat
@@ -211,5 +210,5 @@
                                  final#))]
               (defmacro ~build-macro-name
                 ([~'& forms#]
-                  `(~build-fn# (dissoc (-> ~@forms#) ::incomplete))))))
+                  `(~build-fn# (-> ~@forms#))))))
            schema-var#)))))
