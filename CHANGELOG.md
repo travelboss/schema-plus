@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [1.0.0] - 2019-04-12
+### Added
+- Add convenience macro based on schema name
+### Removed
+- Remove existing convenience macros +-> and +generate->
+
 ## [0.1.1] - 2019-04-05
 ### Fixed
 - Fix clojurescript compatibility
