@@ -104,17 +104,17 @@ The basic way to a new instance would look like:
     (+Foo-build))
 ```
 
-To make this a little less redundant, the `+->` threading macro is available. It removes the need for the final build call:
+To make this a little less redundant, there is a threading macro defined for each schema. It removes the need for the final build call:
 
 ```clojure
-(+-> +Foo
-     (+Foo-with-bar 123)
-     (+Foo-with-baz "ABC"))
+(+Foo-> (+Foo)
+        (+Foo-with-bar 123)
+        (+Foo-with-baz "ABC"))
 ```
 
-There's also a `+generate->` version that starts with a generated instance of the schema and simply allows you to modify individual fields. This is useful for tests, where mock data is fine for most fields, but one or two need to be specified explicitly.
+You can also start with a generated value. This is useful for tests, where mock data is fine for most fields, but one or two need to be specified explicitly.
 
 ```clojure
-(+generate-> +Foo
-             (+Foo-with-baz "ABC"))
+(+Foo-> (generate Foo)
+        (+Foo-with-baz "ABC"))
 ```
