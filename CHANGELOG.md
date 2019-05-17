@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [1.0.1] - 2019-05-17
+### Fixed
+- Previously, only literal schema forms would have builders created.
+
 ## [1.0.0] - 2019-04-12
 ### Added
 - Add convenience macro based on schema name

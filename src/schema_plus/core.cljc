@@ -131,13 +131,11 @@
                     (str (namespace schema-name) "/+" (name schema-name)))
 
         ; build a seq of [setter-fn-name field-name] for all fields
-        fn-names-and-keys (if (and make-builders? (map? schema-form))
-                            (for [k (keys schema-form)]
-                              (let [field-name (if (seq? k) ; remove s/optional-key wrappers, etc
-                                                 (last k)
-                                                 k)]
-                                [(symbol (str base-name "-with-" (name field-name)))
-                                 field-name]))
+        my-form (eval schema-form)
+        fn-names-and-keys (if (and make-builders? (map? my-form))
+                            (for [k (keys my-form)]
+                              [(symbol (str base-name "-with-" (name (s/explicit-schema-key k))))
+                                (s/explicit-schema-key k)])
                             [])
         builder-fn-name (symbol base-name)
         build-fn-name (symbol (str base-name "-build"))

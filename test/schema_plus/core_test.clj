@@ -196,10 +196,14 @@
 (declare +MyPerson-with-age)
 (declare +MyPerson-build)
 (declare +MyPerson->)
+(declare +MyPersonWithHat-build)
 (defschema+ MyPerson
   {:name s/Str
     :age s/Int
     (s/optional-key :occupation) s/Str})
+(defschema+ MyPersonWithHat
+  (merge MyPerson
+         {:hat-type s/Keyword}))
 
 (deftest test-builder-functions
 
@@ -251,4 +255,10 @@
   (testing "An initial map can be passed in"
     (is (= {:name "Bob" :age 42}
            (-> (+MyPerson {:name "Bob" :age 42})
-               (+MyPerson-build))))))
+               (+MyPerson-build)))))
+
+  (testing "Composite schemas"
+    (is (= {:name "Bob" :age 42 :hat-type :fedora}
+           (-> (+MyPersonWithHat {:name "Bob" :age 42})
+               (+MyPersonWithHat-with-hat-type :fedora)
+               (+MyPersonWithHat-build))))))
