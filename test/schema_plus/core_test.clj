@@ -261,4 +261,9 @@
     (is (= {:name "Bob" :age 42 :hat-type :fedora}
            (-> (+MyPersonWithHat {:name "Bob" :age 42})
                (+MyPersonWithHat-with-hat-type :fedora)
-               (+MyPersonWithHat-build))))))
+               (+MyPersonWithHat-build)))))
+
+  (testing "Handle non specific map schemas"
+    ; only care that an exception isn't thrown
+    (defschema+ MyNonSpecificSchema
+      {s/Str s/Keyword})))
