@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [1.0.3] - 2019-05-19
+### Fixed
+- Don't eval schema forms in clojurescript.
+
 ## [1.0.2] - 2019-05-17
 ### Fixed
 - Schemas with non specific keys would cause compilation errors.

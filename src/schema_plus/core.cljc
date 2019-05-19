@@ -1,5 +1,6 @@
 (ns schema-plus.core
   "Core functions, including defschema+"
+  #?(:cljs (:require-macros [schema-plus.core]))
   (:require [clojure.set :refer [difference]]
             [clojure.string :as string]
             [schema.core :as s]
@@ -130,8 +131,9 @@
                     (str "+" schema-name)
                     (str (namespace schema-name) "/+" (name schema-name)))
 
+        ; don't eval in case of clojurescript, TODO: should find a better way of disabling this
+        my-form (if (:ns &env) schema-form (eval schema-form))
         ; build a seq of [setter-fn-name field-name] for all fields
-        my-form (eval schema-form)
         fn-names-and-keys (remove
                             nil?
                             (if (and make-builders? (map? my-form))
