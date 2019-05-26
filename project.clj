@@ -1,4 +1,4 @@
-(defproject travelboss/schema-plus "1.0.3"
+(defproject travelboss/schema-plus "1.0.4"
   :description "Adds easy mock generation and builder functions to plumatic/schema definitions"
   :url "http://github.com/travelboss/schema-plus"
   :license {:name "MIT"

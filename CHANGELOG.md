@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [1.0.4] - 2019-05-26
+### Fixed
+- Handle constrained schema maps.
+
 ## [1.0.3] - 2019-05-19
 ### Fixed
 - Don't eval schema forms in clojurescript.

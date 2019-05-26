@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [schema.core :as s]
             [schema-generators.generators :as sg]
-            [clojure.test.check.generators :as cg]))
+            [clojure.test.check.generators :as cg])
+  (:import [schema.core Constrained]))
 
 (def generator-registry
   "Holds a map of Schema -> Generator for default generation behavior."
@@ -132,12 +133,15 @@
                     (str (namespace schema-name) "/+" (name schema-name)))
 
         ; don't eval in case of clojurescript, TODO: should find a better way of disabling this
-        my-form (if (:ns &env) schema-form (eval schema-form))
+        possibly-constrained-form (if (:ns &env) schema-form (eval schema-form))
+        real-form (if (instance? Constrained possibly-constrained-form)
+                    (:schema possibly-constrained-form)
+                    possibly-constrained-form)
         ; build a seq of [setter-fn-name field-name] for all fields
         fn-names-and-keys (remove
                             nil?
-                            (if (and make-builders? (map? my-form))
-                              (for [k (keys my-form)]
+                            (if (and make-builders? (map? real-form))
+                              (for [k (keys real-form)]
                                 (when (s/specific-key? k)
                                   [(symbol (str base-name "-with-" (name (s/explicit-schema-key k))))
                                   (s/explicit-schema-key k)]))

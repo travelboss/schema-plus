@@ -197,6 +197,7 @@
 (declare +MyPerson-build)
 (declare +MyPerson->)
 (declare +MyPersonWithHat-build)
+(declare +MyConstrainedMap)
 (defschema+ MyPerson
   {:name s/Str
     :age s/Int
@@ -204,6 +205,11 @@
 (defschema+ MyPersonWithHat
   (merge MyPerson
          {:hat-type s/Keyword}))
+(defschema+ MyConstrainedMap
+  (s/constrained
+    {:a s/Int
+     :b s/Str}
+    (constantly true)))
 
 (deftest test-builder-functions
 
@@ -262,6 +268,13 @@
            (-> (+MyPersonWithHat {:name "Bob" :age 42})
                (+MyPersonWithHat-with-hat-type :fedora)
                (+MyPersonWithHat-build)))))
+
+  (testing "Builder functions on constrained maps."
+    (is (= {:a 1 :b "2"}
+           (-> (+MyConstrainedMap {})
+               (+MyConstrainedMap-with-a 1)
+               (+MyConstrainedMap-with-b "2")
+               (+MyConstrainedMap-build)))))
 
   (testing "Handle non specific map schemas"
     ; only care that an exception isn't thrown
