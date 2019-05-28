@@ -35,7 +35,8 @@ All notable changes to this project will be documented in this file. This change
 - Initial implementation, including defschema+, get-generator, set-generator, +->, and +generate->
 
 
-[Unreleased]: https://github.com/travelboss/schema-plus/compare/1.0.3...HEAD
+[Unreleased]: https://github.com/travelboss/schema-plus/compare/1.0.4...HEAD
+[1.0.4]: https://github.com/travelboss/schema-plus/compare/1.0.4...1.0.3
 [1.0.3]: https://github.com/travelboss/schema-plus/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/travelboss/schema-plus/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/travelboss/schema-plus/compare/1.0.0...1.0.1
