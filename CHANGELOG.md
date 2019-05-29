@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+## [1.0.5] - 2019-05-29
+### Fixed
+- Correctly refer records in clojurescript
+
 ## [1.0.4] - 2019-05-26
 ### Fixed
 - Handle constrained schema maps.
@@ -36,6 +40,7 @@ All notable changes to this project will be documented in this file. This change
 
 
 [Unreleased]: https://github.com/travelboss/schema-plus/compare/HEAD..1.0.4
+[1.0.5]: https://github.com/travelboss/schema-plus/compare/1.0.4..1.0.5
 [1.0.4]: https://github.com/travelboss/schema-plus/compare/1.0.3..1.0.4
 [1.0.3]: https://github.com/travelboss/schema-plus/compare/1.0.2..1.0.3
 [1.0.2]: https://github.com/travelboss/schema-plus/compare/1.0.1..1.0.2

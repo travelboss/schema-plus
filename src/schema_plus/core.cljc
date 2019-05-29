@@ -5,8 +5,9 @@
             [clojure.string :as string]
             [schema.core :as s]
             [schema-generators.generators :as sg]
-            [clojure.test.check.generators :as cg])
-  (:import [schema.core Constrained]))
+            [clojure.test.check.generators :as cg]
+            #?(:cljs [schema.core :refer [Constrained]]))
+  #?(:clj (:import [schema.core Constrained])))
 
 (def generator-registry
   "Holds a map of Schema -> Generator for default generation behavior."
