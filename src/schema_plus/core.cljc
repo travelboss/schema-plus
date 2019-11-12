@@ -134,7 +134,8 @@
                     (str (namespace schema-name) "/+" (name schema-name)))
 
         ; don't eval in case of clojurescript, TODO: should find a better way of disabling this
-        possibly-constrained-form (if (:ns &env) schema-form (eval schema-form))
+        clojurescript? (-> &env :ns nil? not)
+        possibly-constrained-form (if clojurescript? schema-form (eval schema-form))
         real-form (if (instance? Constrained possibly-constrained-form)
                     (:schema possibly-constrained-form)
                     possibly-constrained-form)
@@ -193,8 +194,7 @@
                schema-with-meta# (vary-meta
                                    schema-obj#
                                    assoc :json-schema {:description ~docstring
-                                                       :example example#})
-               schema-var# (s/defschema ~schema-name ~docstring schema-with-meta#)]
+                                                       :example example#})]
 
            (s/validate schema-obj# example#)
 
@@ -219,4 +219,9 @@
               (defmacro ~build-macro-name
                 ([~'& forms#]
                   `(~build-fn# (-> ~@forms#))))))
-           schema-var#)))))
+
+           (def
+             ; the export metadata prevents minification of schema names during
+             ; clojurescript compilation
+             ~(with-meta schema-name {:export true})
+             schema-with-meta#))))))
